@@ -1,0 +1,566 @@
+\documentclass[16pt]{beamer}
+\definecolor{links}{HTML}{2A1B81}
+\hypersetup{colorlinks,linkcolor=,urlcolor=links}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage[absolute,overlay]{textpos}
+\usepackage{graphicx}
+
+\definecolor{ForestGreen}{RGB}{60, 140, 60}
+
+\usetheme[
+	bullet=circle,		% Other option: square
+	bigpagenumber,		% circled page number on lower right
+	topline=true,		% colored bar at the top of the frame 
+	]{Zurich}
+
+\lstdefinelanguage{Julia}%
+  {morekeywords={abstract,break,begin,case,catch,const,continue,do,else,elseif,%
+      end,export,false,for,function,immutable,import,importall,if,in,%
+      macro,module,otherwise,quote,return,switch,true,try,type,typealias,%
+      using,while},%
+   sensitive=true,%
+   alsoother={$},%
+   morecomment=[l]\#,%
+   morecomment=[n]{\#=}{=\#},%
+   morestring=[s]{"}{"},%
+   morestring=[m]{'}{'},%
+}[keywords,comments,strings]%
+
+\lstset{%
+    language         = Julia,
+    basicstyle       = \ttfamily,
+    keywordstyle     = \bfseries\color{blue},
+    stringstyle      = \color{magenta},
+    commentstyle     = \color{ForestGreen},
+    showstringspaces = false,
+}
+
+%-----------------------------------------------------------------------------
+% DOCUMENT PROPERTIES
+
+\author[Joosep Pata]{Joosep Pata\\ \texttt{<pata@phys.ethz.ch>}}
+\institute[ETHz]{ETH Zürich, Institute of Particle Physics}
+\title{Julia: superglue for scientific computing}
+\titlegraphic{\includegraphics[height=0.8cm]{ipp.jpeg}}
+
+%-----------------------------------------------------------------------------
+
+
+\begin{document}
+
+
+% ----------------------------------------------------------------------------
+\frame{
+
+\titlepage
+
+}
+% ----------------------------------------------------------------------------
+
+
+\section{Example}
+
+
+\begin{frame}[fragile]
+\frametitle{Motivation}
+
+\begin{center}
+Restrict problem space to numerics - speed of C, simplicity of Python.
+\end{center}
+
+\vspace{.3cm}
+\begin{center}
+Optimizations based on existing technology - LLVM
+\end{center}
+
+\vspace{.3cm}
+\begin{center}
+Data analysis now common - benefit from external developments.
+\end{center}
+
+\vspace{.3cm}
+\begin{center}
+This talk is about how julia can be used for scientific computing.
+\end{center}
+
+
+\end{frame}
+
+% ----------------------------------------------------------------------------
+\begin{frame}[fragile]
+\vspace{0.5cm}
+\frametitle{Why another language?}
+
+The two-language problem
+\begin{itemize}
+\item static languages: great for experts, large, low-level applications, real-time
+\item data analysis and exploration: \textcolor{red}{iteration}, \textcolor{ForestGreen}{experimentation}, \textcolor{gray}{unstructured}
+\end{itemize}
+
+\begin{center}
+Data analysis now massively popular, a typical physicist has limited (quality) experience with C++: \textbf{just wants the result}(TM)
+\end{center}
+
+\begin{center}
+Enter \textcolor{ForestGreen}{Python}, \textcolor{red}{R}: surging popularity in data analysis, science.
+\end{center}
+
+But \textbf{no} knowledge of types $\Rightarrow$ \textbf{no} fast machine code.
+\begin{lstlisting}
+p = Particle()
+foo(p) #must do explicit type checks every time
+\end{lstlisting}
+
+%\begin{textblock*}{5cm}(5cm,7cm) % {block width} (coords)
+%\includegraphics[width=2cm]{julia.png}
+%\end{textblock*}
+
+%\begin{textblock*}{5cm}(5cm,7cm) % {block width} (coords)
+%\includegraphics[width=2cm]{julia.png}
+%\end{textblock*}
+
+\end{frame}
+% ----------------------------------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{What has been tried?}
+\begin{center}
+\Large{Vectorize and offload "heavy" stuff to a dedicated kernel?}
+\end{center}
+
+\begin{itemize}
+\item Leads to "expert" and "non-expert" code
+\item Artificial boundaries: user functions not callable
+\item Not every problem (easily) vectorizable: \textcolor{red}{user-defined types}
+\item Cost(human time) > Cost(machine time): but don't want to iterate weeks to try ideas!
+\end{itemize}
+
+\begin{center}
+\textcolor{red}{Let the compiler do the hard work, write code as is most natural.}
+\end{center}
+
+\begin{columns}
+\column[t]{5cm}
+
+\centering{\textcolor{red}{vectorized}}
+\begin{lstlisting}
+rows = [row1, ...]
+analyzeAll(rows)
+\end{lstlisting}
+
+\column[t]{5cm}
+\centering{\textcolor{ForestGreen}{serial}}
+\begin{lstlisting}
+for (i=0;i<100;i++) {
+  row = getRow(i);
+  analyze(row);
+}
+\end{lstlisting}
+\end{columns}
+
+\end{frame}
+
+% ----------------------------------------------------------------------------
+
+\begin{frame}
+  \frametitle{The solution}
+
+  \vspace{.4cm}
+  \begin{center}
+  \Large{\textcolor{red}{High-level}, \textcolor{ForestGreen}{fast}, \textcolor{blue}{dynamically compiled} numerics.}
+  \end{center}
+
+  \begin{itemize}
+  \item Started at MIT CSAIL in 2011, now open-source, worldwide activity.
+  \item Easy to use (like MATLAB, R), for generic numerical computing
+  \item Used for physics, bio-informatics, statistics, image processing, finance
+  \item Modular design: well-tested core + packages
+  \item Code and issues tracked on github, (too) easy to contribute.
+  \item Based on LLVM, OpenBLAS/Intel MKL
+  \end{itemize}
+
+  \begin{textblock*}{5cm}(5cm,0.3cm) % {block width} (coords)
+  \includegraphics[width=2cm]{julia.png}
+  \end{textblock*}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Development status}
+    \begin{textblock*}{10cm}(0.5cm,1.2cm)
+    Core workflow and discussions on:
+    \href{https://github.com/JuliaLang/julia/}{github.com/JuliaLang/julia}
+    \end{textblock*}
+  \begin{textblock*}{5cm}(0.5cm,2cm) % {block width} (coords)
+    \includegraphics[height=2cm]{commits.png}
+  \end{textblock*}
+  \begin{textblock*}{5cm}(8.5cm,2cm) % {block width} (coords)
+    \includegraphics[height=2cm]{issues.png}
+  \end{textblock*}
+  \begin{textblock*}{10cm}(0.7cm,4.5cm)
+    Daily commit activity:
+  \end{textblock*}
+  \begin{textblock*}{5cm}(0.5cm,5cm) % {block width} (coords)
+    \includegraphics[height=2.5cm]{commits_per_day.png}
+  \end{textblock*}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{How it looks like...}
+  Download binaries for OSX/Linux/Win, run REPL:
+  \begin{lstlisting}
+julia> 1+2
+3
+julia> Pkg.update()
+julia> Pkg.add("Distributions")
+julia> using Distributions, ROOT
+julia> h = TH1D("h", "Hist", Int32(10), -10, 10)
+  \end{lstlisting}
+  \begin{itemize}
+    \item Run code in \textcolor{red}{batch mode} (e.g. on cluster): \texttt{julia code.jl}.
+    \item Run interactive environment: \texttt{jupyter notebook} 
+  \end{itemize}
+
+  The \href{manual}{http://docs.julialang.org/en/release-0.4/manual/} is excellent.
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Dynamic, optional types}
+
+  \begin{centering}
+
+  Types may be specified or inferred automatically.
+  User-side code auto-typed (time saver), library-side explicit-typed
+  \begin{lstlisting}
+  julia> x = 1
+  1
+  julia> s = "asd"
+  "asd"
+  julia> bla = Uint32(2)
+  0x00000002
+  \end{lstlisting}
+  Operations with \texttt{x, s, bla} will be \textbf{machine-level}!
+
+  Functions may be typed, compiler figures out what to do at runtime:
+  \begin{lstlisting}
+    julia> f(x::Int64) = x^2
+    julia> g(y, z) = sqrt(y^2 + z^2)
+  \end{lstlisting}
+  \end{centering}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Multiple dispatch}
+  \begin{itemize}
+  \item single dispatch: \verb|spaceship.collide(asteroid)|
+  \item multiple dispatch: \verb|collide(spaceship, asteroid)|, \verb|collide(spaceship, spaceship)|
+  \end{itemize}
+
+  Natural for mathematical code (operations are global). Easy to make common APIs by extending libraries. Leverages type system instead of boxing.
+  \begin{centering}
+  \end{centering}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Underlying code}
+  What code is actually generated for a function?
+  \begin{lstlisting}
+  #define a new simple function
+  julia> f(x) = x > 0 ? -1 : 1
+  f (generic function with 2 methods)
+  #check produced code if x is Int64
+  julia> code_llvm(f, (Int64, ))
+  #that's the low-level LLVM code
+  define i64 @julia_f_21502(i64) {
+  top:
+    %1 = icmp slt i64 %0, 1
+    %. = select i1 %1, i64 1, i64 -1
+    ret i64 %.
+  \end{lstlisting}
+  As fast as clang/C++!
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Speed}
+
+\begin{center}
+\textbf{fast} basic functionality: loops, floating-point operations, external C/Fortran calls
+\end{center}
+
+\textcolor{ForestGreen}{Python}:
+\begin{lstlisting}
+  In [11]: %time
+  for i in arange(100000000):
+    x+=random.random()
+  Out [11] Wall time: 20.2 s
+\end{lstlisting}
+
+\textcolor{red}{julia}:
+\begin{lstlisting}
+  julia> @time (
+  for i=1:100000000
+    x += rand()
+  end)
+> 3.501108 seconds
+\end{lstlisting}
+Julia can outperform industry-standard C++ codes: \href{https://gist.github.com/skariel/3d2018f9341a058e00fc}{tesselation}.
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Type system}
+
+Types are simple, low-overhead and fast! Can make types based on input data at runtime.
+\begin{lstlisting}
+type Particle
+  momentum::Float64 #explicitly specified
+  name #no specified type, can be Anything
+  friends::Vector{Particle} #complex type
+end
+my_p = Particle(0, "muon", [])
+foo(p::Particle) = p.momentum^2
+\end{lstlisting}
+
+\begin{itemize}
+\item Types are compiled: no overhead for e.g. \texttt{particle.momentum}
+\item code is  specialized based on exact type specification information
+\item \textbf{no speed difference} with respect to built-in types
+\item types specify \textcolor{red}{only data}: multiple dispatch for member functions
+\item Easily add additional functions to types, e.g. \texttt{foo(t::TTree)}
+\end{itemize}
+
+\end{frame}
+
+
+%\begin{center}
+%Compile functions \textbf{just-in-time} when types are known! 
+%\end{center}
+
+% ----------------------------------------------------------------------------
+
+% ----------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Simple Mandlebrot example}
+
+\begin{lstlisting}
+function mandel(z)
+    c = z
+    maxiter = 80
+    for n = 1:maxiter
+        if abs(z) > 2
+            return n-1 #asd
+        end
+        z = z^2 + c
+    end
+    return maxiter
+end
+\end{lstlisting}
+\end{frame}
+% ----------------------------------------------------------------------------
+
+
+\begin{frame}
+  \frametitle{Speed comparisons}
+  \begin{centering}
+  \includegraphics[width=12cm]{speedcomp.png}
+  \end{centering}
+  Naive julia implementation often similar to or better than C / Fortran, 
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Python interop}
+  \verb|PyCall.jl|, written by Steven Johnson (fftw)
+
+  Can import modules.
+  \begin{lstlisting}
+@pyimport numpy.random as nr
+nr.rand(3,4)
+  \end{lstlisting}
+  
+  Pass julia functions!
+  \begin{lstlisting}
+@pyimport scipy.optimize as so
+so.newton(x -> cos(x) - x, 1)
+  \end{lstlisting}
+  
+  Methods have special syntax: \verb|my_dna.find("ACT")| becomes
+  \begin{lstlisting}
+@pyimport Bio.Seq as s
+@pyimport Bio.Alphabet as a
+my_dna = s.Seq("AGTACACTGGT", a.generic_dna)
+my_dna[:find]("ACT")
+  \end{lstlisting}
+  \begin{centering}
+  \end{centering}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{C/Fortran interop}
+  Can call C or Fortran libraries natively, no overhead.
+
+  \begin{lstlisting}
+const LIBOL = "libopenloops.so"
+#id - process id (numeric)
+#pp - array of particle momenta (4*N 1D)
+#m2_tree - array with amplitude
+function ol_evaluate_tree(id, pp, m2_tree)
+  ccall(
+      (:ol_evaluate_tree, LIBOL),
+      Void,
+      (Cint, Ptr{Cdouble}, Ptr{Cdouble}),
+      Cint(id), pp, m2_tree
+      )
+end
+ol_setparameter_int("order_ew", 1)
+ol_evaluate_tree(id, pp, m2_tree)
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{C++ interop}
+  From community package \href{Cxx.jl}{https://github.com/Keno/Cxx.jl}, requires development version (0.5) of julia with latest (svn) LLVM.
+
+  \begin{lstlisting}
+  using Cxx
+  cxx""" #include<iostream> """  
+
+  cxx"""
+    float mycppfunction(int a, float b) {   
+      int y = (int)(b * 10.0);
+      int x = 10;
+      return a + x*y + 2;
+  }
+  """
+  # Convert C++ to Julia function
+  julia> result = @cxx mycppfunction(1, 1.0)
+  \end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Plotting}
+  Many competing packages, matplotlib.pyplot very stable:
+
+  \begin{center}
+    \includegraphics[width=8cm]{plot.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{One more thing...}
+  \begin{itemize}
+    \item Support for automatic SIMD vectorization: \texttt{@simd for i=1:10000 x[i]*y[i] end} $\rightarrow$ linear speed-up
+    \item Built-in parallelization, coroutines: one machine to a cluster, no \texttt{GIL} like in Python, memory-shared arrays
+    \item Code $=$ Data: can manipulate program code on the fly (think LISP)
+    \item Interactivity through \textbf{Jupyter} kernel, one of the main foci
+    \item Language interop: C, Fortran natively, all of Python; soon C++ through add-ons: can wrap a complex library in a weekend.
+    \item Many mature \href{http://pkg.julialang.org/}{packages}: statistics, storage, optimization, plotting, MVAs
+    \item Soon: compile directly to GPU code
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Notebook interface}
+  Julia supported natively in the jupyter notebook.
+  
+  \begin{itemize}
+    \item{\href{https://github.com/jpata/JuliaForPhysicists/blob/master/tabular.ipynb}{ROOT trees}}
+    \item{\href{https://github.com/jpata/JuliaForPhysicists/blob/master/Stats.ipynb}{histograms}}
+    \item{\href{https://github.com/jpata/JuliaForPhysicists/blob/master/Histograms.ipynb}{statistics}}
+    \item{\href{https://github.com/jpata/JuliaForPhysicists/blob/master/Cxx.ipynb}{C++ interop}}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Traction}
+  \begin{textblock*}{5cm}(0.5cm,2cm) % {block width} (coords)
+    \includegraphics[width=12cm]{popularity.png}
+  \end{textblock*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Summary}
+  \begin{center}
+  \Large \textcolor{red}{High-level code can still be fast.}
+  \end{center}
+
+  \begin{center}
+  \Large \textcolor{gray}{Julia gaining traction in teaching, research and industry.}
+  \end{center}
+
+  \begin{center}
+  \Large \textcolor{ForestGreen}{Julia used in and useful for high-energy physics}
+  \end{center}
+
+  \begin{center}
+  \Large \textcolor{black}{ROOT and julia are complementary.}
+  \end{center}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Julia drawbacks}
+  \begin{itemize}
+    \item Needs relatively new compiler (gcc 4.8+) and up-to-date software stack
+    \item Less feature complete than python: database interface, domain-specific libraries
+    \item garbage collection introduces real-time difficulties
+    \item C++ support only in unstable development version with LLVM 3.8
+    \item 
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Teaching}
+Julia is used in \href{http://julialang.org/teaching/}{teaching} @ MIT since 2013.
+Optimization, linear algebra, mathematical programming, numerical computation, PDEs.
+
+\begin{itemize}
+  \item \textcolor{ForestGreen}{University of Edinburgh, Spring 2016}
+  \begin{itemize}
+    \item MATH11146, Modern optimization methods for big data problems (Prof. Peter Richtarik)
+  \end{itemize}
+  
+  \item \textcolor{red}{MIT, Fall 2015}
+  \begin{itemize}
+    \item 6.251/15.081, Introduction to Mathematical Programming (Prof. Dimitris J. Bertsimas)
+    \item 18.06, Linear Algebra (Dr. Alex Townsend)
+    \item 18.303, Linear Partial Differential Equations: Analysis and Numerics (Prof. Steven G. Johnson)
+    \item 18.337/6.338, Numerical Computing with Julia (Prof. Alan Edelman). (IJulia notebooks)
+    \item 18.085/0851, Computational Science And Engineering I (Prof. Pedro J. Sáenz)
+  \end{itemize}
+  
+  \item \textcolor{blue}{“Sapienza” Univeristy of Rome, Italy, Spring 2015}
+  \begin{itemize}
+    \item Operations Research (Giampaolo Liuzzi)
+  \end{itemize}
+
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Industry}
+Several companies are working with julia and contributing to it (open-source).
+
+\begin{itemize}
+  \item Intel working on adding multi-threading to julia.
+  \item Facebook working on database interfaces.
+  \item Google investigating, some work on static analysis tools.
+  \item Finance companies: BlackRock
+\end{itemize}
+\end{frame}
+
+% ----------------------------------------------------------------------------
+\begin{frame}
+  \begin{textblock*}{5cm}(4cm,1.3cm)
+  \Large \textcolor{black}{Thank you! Questions?}
+  \end{textblock*}
+  \begin{center}
+    \includegraphics[width=10cm]{SaasFeeSummer.jpg}
+  \end{center}
+\end{frame}
+\usebackgroundtemplate{}
+% ----------------------------------------------------------------------------
+
+
+\end{document}
